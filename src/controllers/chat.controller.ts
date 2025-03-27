@@ -59,6 +59,10 @@ export class ChatController {
     try {
       // Close the chat
       await this.chatService.closeChat();
+
+      res.json({
+        success: true,
+      });
     } catch (error) {
       console.error('Close chat error:', error);
       res.status(500).json({
@@ -78,19 +82,24 @@ export class ChatController {
       // Export the chat history
       const result = await this.chatService.exportChatHistory();
 
-      res.download(result, path.basename(result), (err) => {
-        if (err) {
-          console.error('Error sending file:', err);
-        }
-        // Clean up the file after sending
-        fs.unlink(result, (unlinkErr: any) => {
-          if (unlinkErr) {
-            console.error('Error deleting file:', unlinkErr);
+      if (result.success && result.data) {
+        res.download(result.data, path.basename(result.data), (err) => {
+          if (err) {
+            console.error('Error sending file:', err);
           }
+          // Clean up the file after sending
+          fs.unlink(result.data, (unlinkErr: any) => {
+            if (unlinkErr) {
+              console.error('Error deleting file:', unlinkErr);
+            }
+          });
         });
-      });
-
-
+      } else {
+        res.status(400).json({
+          success: false,
+          error: result.error || 'Failed to export chat'
+        });
+      }
     } catch (error) {
       console.error('Export chat error:', error);
       res.status(500).json({

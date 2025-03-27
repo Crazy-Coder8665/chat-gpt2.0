@@ -234,6 +234,11 @@
         const loading = document.getElementById('loading');
         const error = document.getElementById('error');
 
+        /**
+         * Add a message to the chat container
+         * @param {string} content - The content of the message
+         * @param {boolean} isUser - Whether the message is from the user
+         */
         function addMessage(content, isUser = false) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'assistant-message'}`;
@@ -242,6 +247,9 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
+        /**
+         * Send a message to the chat
+         */
         async function sendMessage() {
             const message = messageInput.value.trim();
             if (!message) return;
@@ -275,6 +283,9 @@
             }
         }
 
+        /**
+         * Close the chat
+         */
         async function closeChat() {
             try {
                 const response = await fetch('/chat/close', {
@@ -292,15 +303,31 @@
             }
         }
 
+        /**
+         * Export the chat
+         */
         async function exportChat() {
             try {
+                const response = await fetch('/chat/export');
+                const data = await response.json();
+                
+                if (!data.success) {
+                    // If the response is a JSON with error message
+                    if (data.error) {
+                        error.textContent = data.error;
+                        error.classList.add('active');
+                    } 
+                }
+                    
+            } catch {
                 window.location.href = '/chat/export';
-            } catch (err) {
-                error.textContent = err.message;
-                error.classList.add('active');
             }
         }
 
+        /**
+         * Handle key press
+         * @param {Event} event - The event object
+         */
         function handleKeyPress(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
@@ -308,7 +335,9 @@
             }
         }
 
-        // Auto-resize textarea
+        /**
+         * Auto-resize textarea
+         */
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';

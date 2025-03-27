@@ -199,10 +199,17 @@ export class ChatService {
 
   /**
    * Export the chat history to a CSV file
-   * @returns {Promise<string>} - Returns a promise that resolves to the path of the exported file
+   * @returns {Promise<{ success: boolean; data?: string; error?: string }>} - Returns a promise that resolves to the result of the export operation
    */
-  async exportChatHistory(): Promise<string> {
+  async exportChatHistory(): Promise<{ success: boolean; data?: string; error?: string }> {
     try {
+      if (!this.chatHistory.length) {
+        return {
+          success: false,
+          error: 'No chat history available to export'
+        };
+      }
+
       // Create CSV content
       const csvContent = [
         ['Role', 'Message', 'Timestamp'],
@@ -227,10 +234,16 @@ export class ChatService {
       // Write to file
       fs.writeFileSync(filepath, csvContent);
 
-      return filepath;
+      return {
+        success: true,
+        data: filepath
+      };
     } catch (error) {
       console.error('Error exporting chat history:', error);
-      throw new Error('Failed to export chat history');
+      return {
+        success: false,
+        error: 'Failed to export chat history'
+      };
     }
   }
 
